@@ -34,7 +34,7 @@ pipeline {
       }
     }
 
-    stage('Deploy Backend code') {
+    stage('Deploy Backend') {
       steps {
         dir('server') {
           sh '''
@@ -46,7 +46,7 @@ pipeline {
       }
     }
 
-    stage('Deploy Frontend code') {
+    stage('Deploy Frontend') {
       steps {
         sh '''
           sudo rm -rf /var/www/html/*
