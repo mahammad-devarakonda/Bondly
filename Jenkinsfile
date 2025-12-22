@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "devarakondahuzefa/bondly-app"
+        IMAGE_NAME = "devarakondahuzefa/bondlyApp"
         DOCKER_CREDS = credentials('docker-hub')
     }
 
