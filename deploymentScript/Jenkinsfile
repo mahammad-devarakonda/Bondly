@@ -1,38 +1,53 @@
 pipeline {
-  agent any
+    agent any
 
-  stages {
-
-    stage('Checkout Code') {
-      steps {
-        git branch: 'PROD',
-            url: 'https://github.com/mahammad-devarakonda/Bondly.git',
-            credentialsId: 'github-creds'
-      }
+    tools {
+        nodejs 'Node20'
     }
 
-    stage('Build Docker Images') {
-      steps {
-        sh 'docker compose build'
-      }
+    environment {
+        IMAGE_NAME = "devarakondahuzefa/bondly-app"
+        DOCKER_CREDS = credentials('docker-hub')
     }
 
-    stage('Deploy Application') {
-      steps {
-        sh '''
-          docker compose down
-          docker compose up -d
-        '''
-      }
-    }
-  }
+    stages {
 
-  post {
-    success {
-      echo '✅ Bondly deployed successfully'
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/mahammad-devarakonda/Bondly.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build App') {
+            steps {
+                sh 'npm run build || echo "No build step"'
+            }
+        }
+
+        stage('Docker Build & Push') {
+            steps {
+                sh """
+                docker build -t $IMAGE_NAME:latest .
+                echo $DOCKER_CREDS_PSW | docker login -u $DOCKER_CREDS_USR --password-stdin
+                docker push $IMAGE_NAME:latest
+                """
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                sh '''
+                docker stop node-app || true
+                docker rm node-app || true
+                docker run -d -p 3000:3000 --name node-app $IMAGE_NAME:latest
+                '''
+            }
+        }
     }
-    failure {
-      echo '❌ Deployment failed'
-    }
-  }
 }
