@@ -1,8 +1,12 @@
-const yesterday = subDays(new Date(), 1);
-const yesterdayStart = startOfDay(yesterday);
-const yesterdayEnd = endOfDay(yesterday);
+const cron = require('node-cron');
+const { subDays, startOfDay, endOfDay } = require('date-fns');
 
 cron.schedule('0 8 * * *', async () => {
+
+    const yesterday = subDays(new Date(), 1);
+    const yesterdayStart = startOfDay(yesterday);
+    const yesterdayEnd = endOfDay(yesterday);
+
     const pendingRequests = await Connection.find({
         status: "interested",
         createdAt: {
@@ -29,10 +33,14 @@ cron.schedule('0 8 * * *', async () => {
         }
     }
 
-    const emailPromises = Object.keys(emailsToSend).map(async (email) => {
+    const emailPromises = Object.keys(emailsToSend).map(email => {
         const { toUserName, fromUserNames } = emailsToSend[email];
         const uniqueFromUserNames = [...new Set(fromUserNames)];
-        return sendNotificationEmail(email, uniqueFromUserNames.join(', '), toUserName);
+        return sendNotificationEmail(
+            email,
+            uniqueFromUserNames.join(', '),
+            toUserName
+        );
     });
 
     await Promise.all(emailPromises);

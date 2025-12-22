@@ -1,10 +1,6 @@
 pipeline {
   agent any
 
-  tools {
-    nodejs 'Node18'
-  }
-
   stages {
 
     stage('Checkout Code') {
@@ -15,44 +11,28 @@ pipeline {
       }
     }
 
-    stage('Backend Install') {
+    stage('Build Docker Images') {
       steps {
-        dir('server') {
-          sh 'npm install'
-        }
+        sh 'docker compose build'
       }
     }
 
-    stage('Frontend Build') {
-      steps {
-        dir('client') {
-          sh '''
-            npm install
-            npm run build
-          '''
-        }
-      }
-    }
-
-    stage('Deploy Backend') {
-      steps {
-        dir('server') {
-          sh '''
-            pm2 stop bondly-backend || true
-            pm2 start index.js --name bondly-backend
-            pm2 save
-          '''
-        }
-      }
-    }
-
-    stage('Deploy Frontend') {
+    stage('Deploy Application') {
       steps {
         sh '''
-          sudo rm -rf /var/www/html/*
-          sudo cp -r client/build/* /var/www/html/
+          docker compose down
+          docker compose up -d
         '''
       }
+    }
+  }
+
+  post {
+    success {
+      echo '✅ Bondly deployed successfully'
+    }
+    failure {
+      echo '❌ Deployment failed'
     }
   }
 }
