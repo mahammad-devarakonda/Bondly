@@ -14,13 +14,13 @@ pipeline {
         // EC2 settings
         EC2_SSH_KEY = credentials('ec2-ssh-key') 
         EC2_USER = "ubuntu"
-        EC2_IP = "3.110.177.164"
+        EC2_IP = credentials('ec2-server-ip')
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                echo "=== Stage: Checkout Code ==="
+                echo "===================================== Stage: Checkout Code ================================================="
                 git branch: 'main', url: 'https://github.com/mahammad-devarakonda/Bondly.git'
                 echo "Checkout Completed"
             }
@@ -28,7 +28,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                echo "=== Stage: Install Dependencies ==="
+                echo "===================================== Stage: Install Dependencies ============================================"
                 
                 dir('server') {
                     echo "Installing Server dependencies..."
@@ -56,7 +56,7 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
-                echo "=== Stage: Build Docker Images ==="
+                echo "===================================== Stage: Build Docker Images ========================================"
                 script {
                     echo "Building Server Image..."
                     sh "docker build -t $SERVER_IMAGE:latest ./server"
@@ -71,7 +71,7 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                echo "=== Stage: Push Docker Images to Hub ==="
+                echo "===================================== Stage: Push Docker Images to Hub ========================================"
                 script {
                     echo "Logging in to Docker Hub..."
                     sh "echo $DOCKER_CREDS_PSW | docker login -u $DOCKER_CREDS_USR --password-stdin"
@@ -90,7 +90,7 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                echo "=== Stage: Deploy to EC2 ==="
+                echo "============================================ Stage: Deploy to EC2 ==================================================="
                 script {
                     def remoteCommand = """
                         echo 'Stopping existing containers...'
