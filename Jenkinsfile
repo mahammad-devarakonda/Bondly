@@ -90,7 +90,7 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                echo "============================================ Stage: Deploy to EC2 ==================================================="
+                echo "====================================== Stage: Deploy to EC2 =============================================="
                 script {
                     def remoteCommand = """
                         echo 'Stopping existing containers...'
@@ -110,11 +110,11 @@ pipeline {
                         echo 'Network ready'
 
                         echo 'Running Server container...'
-                        docker run -d --name bondly-server --network bondly-net -p 5000:5000 $SERVER_IMAGE:latest
+                        docker run -d --name bondly-server --network bondly-net -e PORT=5000 -p 5000:5000 $SERVER_IMAGE:latest
                         echo 'Server container started'
 
                         echo 'Running Client container...'
-                        docker run -d --name bondly-client --network bondly-net -p 80:80 $CLIENT_IMAGE:latest
+                        docker run -d --name bondly-client --network bondly-net -p 3000:80 $CLIENT_IMAGE:latest
                         echo 'Client container started'
 
                         echo 'Deployment completed successfully!'
