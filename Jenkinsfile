@@ -93,6 +93,8 @@ pipeline {
                 echo "====================================== Stage: Deploy to EC2 =============================================="
                 script {
                     def remoteCommand = """
+                        set -e
+
                         echo 'Stopping existing containers...'
                         docker stop bondly-server || true
                         docker rm bondly-server || true
@@ -101,8 +103,8 @@ pipeline {
                         echo 'Existing containers stopped'
 
                         echo 'Pulling latest images...'
-                        docker pull $SERVER_IMAGE:latest
-                        docker pull $CLIENT_IMAGE:latest
+                        docker pull ${SERVER_IMAGE}:latest
+                        docker pull ${CLIENT_IMAGE}:latest
                         echo 'Latest images pulled'
 
                         echo 'Creating network if not exists...'
@@ -110,22 +112,25 @@ pipeline {
                         echo 'Network ready'
 
                         echo 'Running Server container...'
-                        docker run -d --name bondly-server --network bondly-net -e PORT=5000 -p 5000:5000 $SERVER_IMAGE:latest
+                        docker run -d --name bondly-server --network bondly-net -e PORT=5000 -p 5000:5000 ${SERVER_IMAGE}:latest
                         echo 'Server container started'
 
                         echo 'Running Client container...'
-                        docker run -d --name bondly-client --network bondly-net -p 3000:80 $CLIENT_IMAGE:latest
+                        docker run -d --name bondly-client --network bondly-net -p 3000:80 ${CLIENT_IMAGE}:latest
                         echo 'Client container started'
 
                         echo 'Deployment completed successfully!'
                     """
-                    
-                    echo "Connecting to EC2 $EC2_IP..."
+
+                    echo "Connecting to EC2..."
                     sshagent(['ec2-ssh-key']) {
-                        sh "ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP '${remoteCommand}'"
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} '${remoteCommand}'
+                        """
                     }
                 }
             }
         }
+
     }
 }
