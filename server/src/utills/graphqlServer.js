@@ -6,11 +6,10 @@ const userAuthMiddleware = require("../middleWare/authMiddleware");
 const createGraphQLServer = async (app, io) => {
 
   const allowedOrigins = [
-    'http://localhost:5173',
+    'http://localhost:5173', 
     'http://bondly.in',
     'https://bondly.in',
-    process.env.CLIENT_URL,
-  ].filter(Boolean);
+  ];
 
   const apolloServer = new ApolloServer({
     typeDefs: mergeTypeDefs,
@@ -27,7 +26,7 @@ const createGraphQLServer = async (app, io) => {
 
   await apolloServer.start();
 
-  apolloServer.applyMiddleware({
+  apolloServer.applyMiddleware({ 
     app,
     cors: {
       origin: (origin, callback) => {
