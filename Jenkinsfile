@@ -131,6 +131,7 @@ pipeline {
                         -e SEND_EMAIL_API_KEY="${SEND_EMAIL_API_KEY}" \
                         -e REDIS_HOST="bondly-redis" \
                         -e REDIS_PORT=6379 \
+                        -e CLIENT_URL="http://${EC2_IP}:3000" \
                         -p 5000:5000 ${SERVER_IMAGE}:latest
                         echo 'Server container started'
 
