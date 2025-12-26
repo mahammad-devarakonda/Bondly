@@ -15,6 +15,11 @@ pipeline {
         EC2_SSH_KEY = credentials('ec2-ssh-key') 
         EC2_USER = "ubuntu"
         EC2_IP = credentials('ec2-server-ip')
+
+        // Secrets (Make sure these are set in Jenkins Credentials)
+        DB_CONNECTION_STRING = credentials('db-connection-string') 
+        JWT_SECRET = credentials('jwt-secret')
+        SEND_EMAIL_API_KEY = credentials('send-email-api-key')
     }
 
     stages {
@@ -100,19 +105,33 @@ pipeline {
                         docker rm bondly-server || true
                         docker stop bondly-client || true
                         docker rm bondly-client || true
+                        docker stop bondly-redis || true
+                        docker rm bondly-redis || true
                         echo 'Existing containers stopped'
 
                         echo 'Pulling latest images...'
                         docker pull ${SERVER_IMAGE}:latest
                         docker pull ${CLIENT_IMAGE}:latest
+                        docker pull redis:alpine
                         echo 'Latest images pulled'
 
                         echo 'Creating network if not exists...'
                         docker network create bondly-net || true
                         echo 'Network ready'
 
+                        echo 'Running Redis container...'
+                        docker run -d --name bondly-redis --network bondly-net -p 6379:6379 redis:alpine
+                        echo 'Redis container started'
+
                         echo 'Running Server container...'
-                        docker run -d --name bondly-server --network bondly-net -e PORT=5000 -p 5000:5000 ${SERVER_IMAGE}:latest
+                        docker run -d --name bondly-server --network bondly-net \
+                        -e PORT=5000 \
+                        -e DB_CONNECTION_STRING="${DB_CONNECTION_STRING}" \
+                        -e JWT_SECRET="${JWT_SECRET}" \
+                        -e SEND_EMAIL_API_KEY="${SEND_EMAIL_API_KEY}" \
+                        -e REDIS_HOST="bondly-redis" \
+                        -e REDIS_PORT=6379 \
+                        -p 5000:5000 ${SERVER_IMAGE}:latest
                         echo 'Server container started'
 
                         echo 'Running Client container...'
