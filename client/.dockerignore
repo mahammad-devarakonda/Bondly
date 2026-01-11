@@ -3,10 +3,10 @@ dist
 build
 .git
 .gitignore
-.env
 .DS_Store
 npm-debug.log
 yarn-error.log
 coverage
 .vscode
 .idea
+*.md
