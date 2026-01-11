@@ -139,6 +139,10 @@ pipeline {
                         echo 'Client container started'
 
                         echo 'Deployment completed successfully!'
+
+                        echo 'Pruning old images on EC2...'
+                        docker image prune -af
+                        echo 'EC2 Cleanup completed'
                     """
 
                     echo "Connecting to EC2..."
@@ -151,5 +155,24 @@ pipeline {
             }
         }
 
+    }
+
+    post {
+        always {
+            echo "===================================== Post-Build Cleanup ================================================="
+            script {
+                echo "Pruning images on Jenkins Agent..."
+                sh 'docker image prune -af || true'
+                
+                echo "Cleaning Workspace..."
+                cleanWs()
+            }
+        }
+        success {
+            echo "Pipeline completed successfully!"
+        }
+        failure {
+            echo "Pipeline failed. Check logs for details."
+        }
     }
 }

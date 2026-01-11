@@ -13,27 +13,34 @@ require('../src/utills/CornScheaduler')
 
 const startServer = async () => {
   const app = express();
-  const PORT = process.env.PORT || 3001;
+  const PORT = process.env.PORT || 3000;
 
   app.use(graphqlUploadExpress());
+
+  // Allow all origins for dev or specify frontend URL
+  app.use(cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost", "http://127.0.0.1"],
+    credentials: true
+  }));
+
   app.use(express.json());
   app.use(cookieParser());
   app.use(helmet({
     crossOriginResourcePolicy: false,
-  })); 
-  
-/*   app.use((req, res, next) => {
-    console.log("Request Body:", req.body);
-    next();
-  });
+  }));
 
-
-  app.use((req, res, next) => {
-    console.log("Cookies:", req.cookies);
-    next();
-  });
-   */
+  /*   app.use((req, res, next) => {
+      console.log("Request Body:", req.body);
+      next();
+    });
   
+  
+    app.use((req, res, next) => {
+      console.log("Cookies:", req.cookies);
+      next();
+    });
+     */
+
   try {
     await connectDB();
     const server = http.createServer(app);

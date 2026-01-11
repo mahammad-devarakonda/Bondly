@@ -4,8 +4,8 @@ const usertypeDef = gql`
     type User {
         id:ID!,
         userName:String!,
-        email:String!,
-        password:String!,
+        email:String,
+        password:String,
         avatar:String
         bio:String
     }
